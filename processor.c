@@ -2,41 +2,78 @@
 #include <stdlib.h>
 #include <math.h>
 
-int * getNextArrayOf(int bytes, FILE *fp){
+
+FILE *input = NULL;
+FILE *output = NULL;
+
+int * getNextArrayOf(int bytes){
 	//Esta funcion lee los n siguientes elementos y los regresa como un arreglo
 	int *arr = NULL;
+	int i;
 	arr = (int *)malloc(bytes * sizeof(int));
-	for (int i = 0; i < bytes; ++i){
-		arr[i] = fgetc(fp);
+	for (i = 0; i < bytes; ++i){
+		arr[i] = fgetc(input);
 		printf("%X ",arr[i]);
+		if (arr[i] < 15) {
+			fprintf(output, "%X",0);	
+		}	
+		fprintf(output, "%X",arr[i]);
 	}
 	printf("\n");
+	//fprintf(output, "\n");
 	return arr;
 }
 
-void skipNext(int times, FILE *fp){
+void skipNext(int times){
 	int i;
+	int hex;
 	for (i = 0; i < times; i++){
-		fgetc(fp);
+		hex = fgetc(input);
+		if (hex < 15) {
+			fprintf(output, "%X",0);	
+		}
+		fprintf(output, "%X",hex);
 	}
+	//fprintf(output, "\n");
 }
 
-long sizeInBytesOfNext(int n, FILE *fp){
+long sizeInBytesOfNext(int n){
 	//Esta funcion obtiene el tamaño de los siguientes n bytes
 	long sum = 0;
 	int i, j, size;
 	int *arr = NULL;
 	arr = (int *)malloc(n * sizeof(int));
-	for (int i = 0; i < n; ++i){
-		arr[i] = fgetc(fp);
+	for (i = 0; i < n; ++i){
+		arr[i] = fgetc(input);
 		printf("%X ",arr[i]);
+		if (arr[i] < 15) {
+			fprintf(output, "%X",0);	
+		}
+		fprintf(output, "%X",arr[i]);
 	}
 	for (i = 0, j=0; i < n; i++, j+=2){
 		//printf("i:%d j:%d arr:%d\n",i,j,arr[i]);
 		sum += arr[i] * pow(16,j);
 	}
+	free(arr);
 	//printf("-----\n");
+	//fprintf(output, "\n");
 	return sum;
+}
+
+void grayScale(){
+	while(!ferror(input) && !feof(input)){
+		int r = fgetc(input);
+		int g = fgetc(input);
+		int b = fgetc(input);
+		int gray = (r + g + b)/3;
+		if (gray < 15) { fprintf(output, "%X",0); }
+		fprintf(output, "%X",gray);
+		if (gray < 15) { fprintf(output, "%X",0); }
+		fprintf(output, "%X",gray);
+		if (gray < 15) { fprintf(output, "%X",0); }
+		fprintf(output, "%X",gray);
+	}
 }
 
 // long sizeInBytes(int arr[]){
@@ -53,53 +90,58 @@ long sizeInBytesOfNext(int n, FILE *fp){
 // }
 
 int main(int argc, char const *argv[]) {
-	FILE *fp = NULL;
 	int *nextArr = NULL;
 	int i = 0;
 	int integer;
 	char buffer[300];
-	fp = fopen("Tulips.bmp","r");
-	//fp = fopen("Tulips.bmp","r");
-	if (fp == NULL) {
+	int ccc = 10 / 3;
+	printf("ccc:%X\n",ccc);
+	input = fopen("Tulips.bmp","r");
+	output = fopen("newImage.bmp","wb");
+	//input = fopen("Tulips.bmp","r");
+	if (input == NULL) {
 		printf("Error, el archivo no existe\n");
+		exit(1);
+	} else if (output == NULL) {
+		printf("No se pudo crear la nueva imagen\n");
 		exit(1);
 	}
 	
-	int b = fgetc(fp);
-	int m = fgetc(fp);
+	int b = fgetc(input);
+	int m = fgetc(input);
 	if(b!=66 && m!=77){
 		printf("El archivo no es mbp\n");
 		exit(1);
 	}
-
-	long tam  = sizeInBytesOfNext(4,fp);
+	fprintf(output, "%X",m);
+	fprintf(output, "%X",b);
+	long tam  = sizeInBytesOfNext(4);
 	printf("tamanio archivo: %ld bytes\n",tam);
-	skipNext(4,fp);//reservados
-	long offset = sizeInBytesOfNext(4,fp);
+	skipNext(4);//reservados
+	long offset = sizeInBytesOfNext(4);
 	printf("offset: %ld\n",offset);
-	skipNext(4,fp);//reservados
-	long ancho = sizeInBytesOfNext(4,fp);
+	skipNext(4);//reservados
+	long ancho = sizeInBytesOfNext(4);
 	printf("ancho: %ld\n",ancho);
-	long alto = sizeInBytesOfNext(4,fp);
+	long alto = sizeInBytesOfNext(4);
 	printf("alto: %ld\n",alto);
-	long planos = sizeInBytesOfNext(2,fp);
+	long planos = sizeInBytesOfNext(2);
 	printf("planos: %ld\n",planos);
-	long bitsPerPixel = sizeInBytesOfNext(2,fp);
+	long bitsPerPixel = sizeInBytesOfNext(2);
 	printf("bits por pixel: %ld\n",bitsPerPixel);
-	skipNext(24,fp);
+	skipNext(24);
+	grayScale();
 
 	// while(!ferror(pf) && !feof(pf)){
 	// 	buffer[i++] = fgetc(pf);
 	// }
-	while(!ferror(fp) && !feof(fp)){
-		integer = fgetc(fp);
-		//printf("%d - %d - %X\n",i++,integer,integer); //%X
-	}
+	
 	buffer[--i] = '\0';
 
-	if (ferror(fp))
+	if (ferror(input))
 		perror("Error durante la lectura");
+	//fprintf(output, "\n");
 	printf("\n");
-	fclose(fp);
+	fclose(input);
 	return 0;
 }
