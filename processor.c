@@ -93,10 +93,9 @@ int main(int argc, char const *argv[]) {
 	int *nextArr = NULL;
 	int i = 0;
 	int integer;
-	char buffer[300];
+	unsigned char buffer[352];
 	int ccc = 10 / 3;
-	printf("ccc:%X\n",ccc);
-	input = fopen("Tulips.bmp","r");
+	input = fopen("test.bmp","r");
 	output = fopen("newImage.bmp","wb");
 	//input = fopen("Tulips.bmp","r");
 	if (input == NULL) {
@@ -107,41 +106,46 @@ int main(int argc, char const *argv[]) {
 		exit(1);
 	}
 	
-	int b = fgetc(input);
-	int m = fgetc(input);
-	if(b!=66 && m!=77){
-		printf("El archivo no es mbp\n");
-		exit(1);
-	}
-	fprintf(output, "%X",m);
-	fprintf(output, "%X",b);
-	long tam  = sizeInBytesOfNext(4);
-	printf("tamanio archivo: %ld bytes\n",tam);
-	skipNext(4);//reservados
-	long offset = sizeInBytesOfNext(4);
-	printf("offset: %ld\n",offset);
-	skipNext(4);//reservados
-	long ancho = sizeInBytesOfNext(4);
-	printf("ancho: %ld\n",ancho);
-	long alto = sizeInBytesOfNext(4);
-	printf("alto: %ld\n",alto);
-	long planos = sizeInBytesOfNext(2);
-	printf("planos: %ld\n",planos);
-	long bitsPerPixel = sizeInBytesOfNext(2);
-	printf("bits por pixel: %ld\n",bitsPerPixel);
-	skipNext(24);
-	grayScale();
-
-	// while(!ferror(pf) && !feof(pf)){
-	// 	buffer[i++] = fgetc(pf);
+	// int b = fgetc(input);
+	// int m = fgetc(input);
+	// if(b!=66 && m!=77){
+	// 	printf("El archivo no es mbp\n");
+	// 	exit(1);
 	// }
-	
-	buffer[--i] = '\0';
+	// fprintf(output, "%X",m);
+	// fprintf(output, "%X",b);
+	// long tam  = sizeInBytesOfNext(4);
+	// printf("tamanio archivo: %ld bytes\n",tam);
+	// skipNext(4);//reservados
+	// long offset = sizeInBytesOfNext(4);
+	// printf("offset: %ld\n",offset);
+	// skipNext(4);//reservados
+	// long ancho = sizeInBytesOfNext(4);
+	// printf("ancho: %ld\n",ancho);
+	// long alto = sizeInBytesOfNext(4);
+	// printf("alto: %ld\n",alto);
+	// long planos = sizeInBytesOfNext(2);
+	// printf("planos: %ld\n",planos);
+	// long bitsPerPixel = sizeInBytesOfNext(2);
+	// printf("bits por pixel: %ld\n",bitsPerPixel);
+	// skipNext(24);
+	// grayScale();
+	int integer_;
+	char header[700];
+	while(!ferror(input) && !feof(input)){
+	 	integer_ = fgetc(input);
+	 	header[i++] = integer_;
+	}
+	//buffer[--i] = '\0';
 
-	if (ferror(input))
-		perror("Error durante la lectura");
+	//fread(buffer, sizeof(char), 5, input);
+	//static unsigned char header[54] = {66,77,0,0,0,0,0,0,0,0,54,0,0,0,40,0,0,0,0,0,0,0,0,0,0,0,1,0,24};
+	fwrite(header, sizeof(char), 294, output);
+	
+	// if (ferror(input))
+	// 	perror("Error durante la lectura");
 	//fprintf(output, "\n");
-	printf("\n");
 	fclose(input);
+	printf("%s\n", buffer);
 	return 0;
 }
